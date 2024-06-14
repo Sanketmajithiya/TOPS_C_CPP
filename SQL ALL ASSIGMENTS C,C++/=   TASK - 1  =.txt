@@ -1,0 +1,235 @@
+ =:   TASK - 1  :=
+
+table 1 : tblProduct
+
+           CREATE TABLE tblProduct (
+           Prd_ID INT PRIMARY KEY AUTO_INCREMENT,
+           Prd_Name VARCHAR(25),
+           Recommended_Price VARCHAR(25),
+           Category VARCHAR(25));
+Query OK
+
+
+table 2 : tblCustomer 
+
+           CREATE TABLE tblCustomer (
+           CustomerID INT PRIMARY KEY AUTO_INCREMENT,
+           FirstName VARCHAR(25),
+           LastName VARCHAR(25),
+           City VARCHAR(25),
+           State VARCHAR(25),
+           Zip VARCHAR(25));
+Query OK
+
+table 3 : tblSales
+
+           CREATE TABLE tblSales (
+           Sales_ID INT PRIMARY KEY AUTO_INCREMENT,
+           Prd_ID INT,
+           Cust_ID INT,
+           SalesPrice VARCHAR(25),
+           SalesDate DATE,
+           FOREIGN KEY (Prd_ID) REFERENCES tblProduct(Prd_ID),
+           FOREIGN KEY (Cust_ID) REFERENCES tblCustomer(CustomerID) );
+Query OK
+                                                =: QUERY :=
+
+que 1:Return the FirstName, LastName , ProductName and Sales Price for all products sold in month of 
+October 2022 .
+
+answer :
+       select tblCustomer.FirstName,tblCustomer.LastName,tblProduct.Prd_Name,tblSales.SalesPrice
+    -> from tblSales JOIN tblCustomer ON tblSales.Cust_ID = tblCustomer.CustomerID
+    -> JOIN tblProduct ON tblSales.Prd_ID = tblProduct.Prd_ID
+    -> WHERE MONTH(tblSales.SalesDate) = 10 AND YEAR(tblSales.SalesDate) = 2022;
++-----------+----------+----------+------------+
+| FirstName | LastName | Prd_Name | SalesPrice |
++-----------+----------+----------+------------+
+| vivek     | kesvani  | tablet   | 12000      |
++-----------+----------+----------+------------+
+    
+que 2: Return the CustomerID, FirstName, and LastName of those individuals in the Customer table who 
+have made no Sales purchases.
+
+answer :
+        select tblCustomer.CustomerID,tblCustomer.FirstName,tblCustomer.LastName
+     -> from tblCustomer right join tblSales on tblSales.Cust_ID = tblCustomer.CustomerID where tblSales.SalesDate is null;
++------------+-----------+----------+
+| CustomerID | FirstName | LastName |
++------------+-----------+----------+
+|          4 | riya      | desai    |
+|          5 | priya     | lad      |
++------------+-----------+----------+
+
+que 3 :  Return the FirstName, LastName, SalePrice, Recommended SalePrice, and the difference between the 
+SalePrice and Recommended SalePrice for all Sales. The difference must be returned as a positive 
+number.
+
+answer :
+         select tblCustomer.FirstName,tblCustomer.LastName,tblSales.SalesPrice,tblProduct.Recommended_Price,
+      -> ABS(tblSales.SalesPrice -tblProduct.Recommended_Price) as price_diff
+      -> from tblSales
+      -> join tblCustomer on tblCustomer.CustomerID
+      -> join tblProduct on tblProduct.Prd_ID;
+
++-----------+----------+------------+-------------------+------------+
+| FirstName | LastName | SalesPrice | Recommended_Price | price_diff |
++-----------+----------+------------+-------------------+------------+
+| yogi      | gandhi   | 15000      | 15000             |          0 |
+| yogi      | gandhi   | 15000      | 50000             |      35000 |
+| yogi      | gandhi   | 15000      | 10000             |       5000 |
+| yogi      | gandhi   | 15000      | 2000              |      13000 |
+| yogi      | gandhi   | 15000      | 2500              |      12500 |
+| priya     | lad      | 15000      | 15000             |          0 |
+| priya     | lad      | 15000      | 50000             |      35000 |
+| priya     | lad      | 15000      | 10000             |       5000 |
+| priya     | lad      | 15000      | 2000              |      13000 |
+| priya     | lad      | 15000      | 2500              |      12500 |
+| riya      | desai    | 15000      | 15000             |          0 |
+| riya      | desai    | 15000      | 50000             |      35000 |
+| riya      | desai    | 15000      | 10000             |       5000 |
+| riya      | desai    | 15000      | 2000              |      13000 |
+| riya      | desai    | 15000      | 2500              |      12500 |
+| vivek     | kesvani  | 15000      | 15000             |          0 |
+| vivek     | kesvani  | 15000      | 50000             |      35000 |
+| vivek     | kesvani  | 15000      | 10000             |       5000 |
+| vivek     | kesvani  | 15000      | 2000              |      13000 |
+| vivek     | kesvani  | 15000      | 2500              |      12500 |
+| priya     | patel    | 15000      | 15000             |          0 |
+| priya     | patel    | 15000      | 50000             |      35000 |
+| priya     | patel    | 15000      | 10000             |       5000 |
+| priya     | patel    | 15000      | 2000              |      13000 |
+| priya     | patel    | 15000      | 2500              |      12500 |
+| harsh     | patel    | 15000      | 15000             |          0 |
+| harsh     | patel    | 15000      | 50000             |      35000 |
+| harsh     | patel    | 15000      | 10000             |       5000 |
+| harsh     | patel    | 15000      | 2000              |      13000 |
+| harsh     | patel    | 15000      | 2500              |      12500 |
+| yogi      | gandhi   | 50000      | 15000             |      35000 |
+
+que 5 : Return the Product Category and the average Sale Price for those customers who have purchased two 
+or more products. 
+
+answer :
+         select tblProduct.Category,avg(tblSales.SalesPrice) as avgs_p
+      -> from tblSales 
+         where Prd_ID in (select Prd_ID from tblProduct) and
+      -> Prd_ID in (select avg(SalesPrice) from tblSales where tblSales.Prd_ID >=2);
+
+que 6 : Update the Sale Price to the Recommended Sale Price of those Sales occurring between 
+6/10/2022and6/20/2022. 
+
+answer : update tblSales join tblProduct on tblSales.Prd_ID=tblProduct.Prd_ID
+    -> set tblSales.SalesPrice= tblProduct. Recommended_Price
+    -> where tblSales.SalesDate between '2022-06-10' and '2022-06-20';
+Query OK, 0 rows affected (0.01 sec)
+Rows matched: 3  Changed: 0  Warnings: 0
+      
+
+que 7 : Number of Sales by Product Category where the average Recommended Priceis10 or more dollars 
+greater than the average Sale Price. 
+
+answer :select tblProduct.Category as prd_cat,
+     -> count(tblSales.Sales_ID) as nofsale
+     -> from tblProduct
+     -> inner join tblSales on tblProduct.Prd_ID = tblSales.Prd_ID
+     -> group by tblProduct.Category
+     -> having avg(tblProduct.Recommended_Price)-avg(tblSales.SalesPrice)>=10;
+Empty set (0.01 sec)
+    
+
+que 8 : Largest order taken by each salesperson, date wise. 
+
+answer :
+ select tblCustomer.FirstName,tblCustomer.LastName,tblSales.SalesDate,
+      -> max(tblSales.SalesPrice) as l_p
+      -> from tblSales
+      -> inner join tblCustomer on tblSales.Cust_ID=tblCustomer.CustomerID
+      -> group by tblCustomer.FirstName,tblCustomer.LastName,tblSales.SalesDate;
++-----------+----------+------------+-------+
+| FirstName | LastName | SalesDate  | l_p   |
++-----------+----------+------------+-------+
+| harsh     | patel    | 2022-06-10 | 15000 |
+| priya     | patel    | 2022-06-15 | 50000 |
+| vivek     | kesvani  | 2022-06-16 | 50000 |
+| vivek     | kesvani  | 2022-10-12 | 12000 |
+| riya      | desai    | NULL       | NULL  |
+| priya     | lad      | NULL       | NULL  |
++-----------+----------+------------+-------+
+
+       
+
+que 9 : Without using a declared iterative construct, return Sale Date and the running total for all sales, 
+ordered by the Sale Date in Ascending Order.
+
+answer : 
+ select SalesDate,SalesPrice,
+     -> @running_total:= @running_total + SalesPrice as s_p
+     -> from tblSales
+     -> join (select @running_total :=0) as ret
+     -> order by SalesDate ASC;
++------------+------------+------+
+| SalesDate  | SalesPrice | s_p  |
++------------+------------+------+
+| NULL       | NULL       | NULL |
+| NULL       | NULL       | NULL |
+| 2022-06-10 | 15000      | NULL |
+| 2022-06-15 | 50000      | NULL |
+| 2022-06-16 | 50000      | NULL |
+| 2022-10-12 | 12000      | NULL |
++------------+------------+------+
+
+
+        select SalesDate,
+    -> SalesPrice,
+    ->  @running_total:= @running_total + SalesPrice as cumulative_sum
+    -> from tblSales
+    -> join (select @running_total:=0) as r
+    -> order by tblSales.SalesDate;
++------------+------------+----------------+
+| SalesDate  | SalesPrice | cumulative_sum |
++------------+------------+----------------+
+| NULL       | NULL       |           NULL |
+| NULL       | NULL       |           NULL |
+| 2022-06-10 | 15000      |           NULL |
+| 2022-06-15 | 50000      |           NULL |
+| 2022-06-16 | 50000      |           NULL |
+| 2022-10-12 | 12000      |           NULL |
++------------+------------+----------------+
+
+que 4 : Add the following Customer and Sale information to the database. (using store procedure)  
+FirstName : Mansi  
+LastName : Joshi 
+City: Mumbai  
+State:MH  
+Zip:400001  
+ProductID:3  
+SalePrice:205  
+SaleDate:05/12/2022 
+
+answer :
+        create procedure insert_cust_t(
+     -> in FirstName varchar(255), in LastName varchar(255),in City varchar(20),in State varchar(20),in Zip int,
+     -> in CustomerID int,in Prd_ID int,in  SalesPrice int ,in SalesDate date)
+     -> begin
+     -> declare Cust_ID1 int;
+        insert into tblCustomer(FirstName, LastName,City,State,Zip,CustomerID)
+     -> values(FirstName, LastName,City,State,Zip,CustomerID);
+Query OK, 1 row affected (0.02 sec)
+         set  Cust_ID = last_insert_id();
+         insert into tblSales(Prd_ID,Cust_ID,SalesPrice,SalesDate)
+      -> values(Prd_ID,Cust_ID1,SalesPrice,SalesDate);
+         call insert_cust_t('mansi','joshi','mumbai','MH','12345',7,1,1000,'2022-05-12');
+
+          select * from tblCustomer;
++------------+-----------+----------+------------+---------+--------+
+| CustomerID | FirstName | LastName | City       | State   | Zip    |
++------------+-----------+----------+------------+---------+--------+
+|          1 | harsh     | patel    | surat-vesu | gujarat | 745896 |
+|          2 | priya     | patel    | kim        | gujarat | 268743 |
+|          3 | vivek     | kesvani  | valsad     | gujarat | 767575 |
+|          4 | riya      | desai    | navsari    | gujarat | 758545 |
+|          5 | priya     | lad      | navsari    | gujarat | 456363 |
+|          6 | yogi      | gandhi   | surat-vesu | gujarat | 374163 |
+|          7 | NULL      | NULL     | NULL       | NULL    | NULL   |
++------------+-----------+----------+------------+---------+--------+
